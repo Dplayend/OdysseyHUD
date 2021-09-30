@@ -1,0 +1,16 @@
+[
+{
+  "modid": "odysseyhud",
+  "name": "OdysseyHUD",
+  "description": "thanks for download my mod",
+  "version": "1.12-1.2",
+  "mcversion": "${mcversion}",
+  "url": "https://www.curseforge.com/minecraft/mc-mods/odyssey-hud-forge-fabric",
+  "updateUrl": "https://github.com/Dplayend/OdysseyHUD",
+  "authorList": ["Dplayend"],
+  "credits": "",
+  "logoFile": "assets/odysseyhud/icon.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]
