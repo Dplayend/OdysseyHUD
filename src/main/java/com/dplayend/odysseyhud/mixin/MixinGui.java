@@ -26,6 +26,7 @@ public abstract class MixinGui {
     private String timeString = "";
     Minecraft mc = Minecraft.getInstance();
     Color getClockColor;
+    Color compassColor;
     int iconLength;
     int weatherLength;
     int index = 0;
@@ -90,4 +91,74 @@ public abstract class MixinGui {
 
         return hourDisplay + ":" + minuteDisplay;
     }
+
+    @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderEffects(Lcom/mojang/blaze3d/vertex/PoseStack;)V", shift = At.Shift.AFTER), cancellable = true)
+    private void renderCompass(PoseStack poseStack, float f, CallbackInfo info) {
+        boolean found = true;
+
+        int xOff = screenWidth / 2 - 93;
+        int yOff = screenHeight - 18;
+
+        for (int n = 0; n <= 35; ++n) {
+            if (mc.player.getInventory().getItem(n).is(Items.COMPASS)) {
+                found = true;
+                break;
+            } else if (mc.player.getOffhandItem().getItem().equals(Items.COMPASS)) {
+                found = true;
+                break;
+            } else if (TrinketCompatibility.hasTrinketsItem(mc.player, Items.COMPASS)) {
+                found = true;
+                break;
+            } else {
+                found = false;
+            }
+        }
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderTexture(0, TEXTURE);
+        if (found) {
+            compassColor = new Color(255, 100, 100);
+
+            timeString = getLocationAndFacing();
+            int length = timeString.length();
+
+            if (!mc.player.getOffhandItem().getItem().equals(Items.AIR)) {
+                xOff -= 28;
+            }
+
+            mc.gui.blit(poseStack, xOff - 9, yOff, 42, 0, 8, 16);
+            for (int i = 0; i < length; i++) {
+                mc.gui.blit(poseStack, xOff - 9 - i * 6, yOff, 2, 0, 6, 16);
+            }
+            mc.gui.blit(poseStack, xOff - 4 - length * 6, yOff, 0, 0, 8, 16); // left side
+            mc.gui.getFont().drawShadow(poseStack, timeString, -length * 6 + xOff + 3, yOff + 4, compassColor.getRGB());
+        }
+        RenderSystem.disableBlend();
+    }
+
+    private String getLocationAndFacing() {
+        String facing = mc.player.getDirection().toString();
+        switch (facing) {
+            case "north":
+                facing = "N";
+                break;
+            case "east":
+                facing = "E";
+                break;
+            case "south":
+                facing = "S";
+                break;
+            case "west":
+                facing = "W";
+                break;
+        }
+
+        int x = (int) mc.player.getBlockX();
+        int y = (int) mc.player.getBlockY();
+        int z = (int) mc.player.getBlockZ();
+
+        return facing + ": " + x + " " + y + " " + z;
+    }
+
 }
